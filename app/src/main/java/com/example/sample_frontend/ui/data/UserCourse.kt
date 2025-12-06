@@ -1,20 +1,10 @@
 package com.example.sample_frontend.ui.data
 
-
-import com.example.sample_frontend.ui.data.Course
-
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
-data class CoursesWrapper(
-    val success: Boolean,
-    val courses: List<CourseResponse>
-)
-
-@Serializable
-data class CourseResponse(
+data class UserCourse(
     @SerialName("id")
     val id: Int,
 
@@ -25,16 +15,15 @@ data class CourseResponse(
     val name: String,
 
     @SerialName("students")
-    val students: List<CourseUser> = emptyList(),
+    val students: List<CourseUser>? = null,
 
     @SerialName("instructors")
-    val instructors: List<CourseUser> = emptyList(),
+    val instructors: List<CourseUser>? = null,
 
     @SerialName("tas")
-    val tas: List<CourseUser> = emptyList(),
+    val tas: List<CourseUser>? = null,
 
     @SerialName("office_hours")
-    val officeHours: List<CourseOfficeHour> = emptyList()
+    val officeHours: List<CourseOfficeHour>? = null
 )
-
 
