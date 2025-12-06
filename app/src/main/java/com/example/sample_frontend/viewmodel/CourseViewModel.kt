@@ -67,6 +67,7 @@ class CourseViewModel @Inject constructor(
         if (index != -1) {
             val course = courses[index]
             courses[index] = course.copy(isFavorited = !course.isFavorited)
+            _filteredCourses.value = courses.toList()
         }
     }
 

@@ -37,7 +37,6 @@ import com.example.sample_frontend.viewmodel.CourseUI
 @Composable
 fun CourseCard(
     CourseUI: CourseUI,
-    isFavorited: Boolean = false,
     onClick: () -> Unit = {},
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier

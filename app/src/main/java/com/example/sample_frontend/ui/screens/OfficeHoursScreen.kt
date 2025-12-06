@@ -14,16 +14,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
@@ -44,8 +51,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sample_frontend.ui.components.Footer
 import com.example.sample_frontend.ui.components.OfficeHourItem
+import com.example.sample_frontend.ui.data.CourseOfficeHour
 import com.example.sample_frontend.ui.data.CourseResponse
+import com.example.sample_frontend.viewmodel.CourseUI
 import com.example.sample_frontend.viewmodel.CourseViewModel
+import kotlinx.serialization.json.Json
 
 @Composable
 fun OfficeHoursScreen(
@@ -65,6 +75,14 @@ fun OfficeHoursScreen(
 
 
     Scaffold(
+        topBar = { OfficeHoursScreenHeader(
+            courseDetails = courseDetails,
+            navController = navController,
+            onFavoriteClick = {
+                courseDetails?.id?.let { courseViewModel.onClickFavorite(it) }
+            },
+            CourseUI = courseViewModel.courses.firstOrNull { it.course.id == id } ?: CourseUI(courseDetails!!, false)
+        ) },
         bottomBar = {Footer(navController = navController)}
     ) { innerPadding ->
         Box(modifier = Modifier
@@ -74,52 +92,93 @@ fun OfficeHoursScreen(
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp)
             ) {
-                Button(
-                    onClick = {
-                        navController.navigate("home")
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier.border(
-                        2.dp,
-                        Color.Black,
-                        shape = MaterialTheme.shapes.extraLarge
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "backwards arrow",
-                        tint = Color.Black
-                    )
-                }
-
                 if (courseDetails != null) {
-                    OfficeHoursScreenHeader(courseDetails = courseDetails!!)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
 
-                    Text("Instructors:", fontWeight = FontWeight.Bold)
+                    Text("Instructors:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     courseDetails!!.instructors.forEach { instr ->
-                        Text("- ${instr.name} (Contact: ${instr.netid})")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${instr.name}",
+                                fontSize = 16.sp,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(18.dp)
+                                    .background(Color.Gray)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${instr.netid}",
+                                fontSize = 16.sp,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
 
-                    Text("TAs:", fontWeight = FontWeight.Bold)
+                    Text("TAs:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     courseDetails!!.tas.forEach { ta ->
-                        Text("- ${ta.name} (Contact ${ta.netid})")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${ta.name}",
+                                fontSize = 16.sp,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(18.dp)
+                                    .background(Color.Gray)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${ta.netid}",
+                                fontSize = 16.sp,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
 
-                    Text("Office Hours:", fontWeight = FontWeight.Bold)
+                    Text("Office Hours:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Show office hours for this course
                     courseDetails!!.officeHours.forEach { oh ->
-                        OfficeHourItem(officeHour = oh)
+                        OfficeHours(officeHour = oh)
                     }
                 } else {
                     Text("Course not found", color = Color.Red)
@@ -131,7 +190,10 @@ fun OfficeHoursScreen(
 
 @Composable
 fun OfficeHoursScreenHeader(
-    courseDetails: CourseResponse
+    courseDetails: CourseResponse?,
+    navController: NavController,
+    onFavoriteClick: (Int) -> Unit,
+    CourseUI: CourseUI
 ) {
     Row (
         modifier = Modifier
@@ -143,11 +205,17 @@ fun OfficeHoursScreenHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowLeft,
-            contentDescription = "left arrow",
-            tint = Color(0xFF197278)
-        )
+        IconButton(
+            onClick = { navController.navigate("home")}
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowLeft,
+                contentDescription = "leftarrow",
+                tint =
+                    Color(0xFF197278)
+
+            )
+        }
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -156,7 +224,7 @@ fun OfficeHoursScreenHeader(
         ) {
             courseDetails?.let {
                 Text(
-                    "${courseDetails!!.code} - ${courseDetails!!.name}",
+                    "${courseDetails.code} - ${courseDetails.name}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
@@ -170,11 +238,67 @@ fun OfficeHoursScreenHeader(
                 lineHeight = 32.sp
             )
         }
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = "left arrow",
-            tint = Color(0xFF197278)
-        )
+        IconButton(
+            onClick = {
+                courseDetails?.id?.let { id ->
+                    onFavoriteClick(id)
+                }
+            }
+        ) {
+            Icon(
+                imageVector = if (CourseUI.isFavorited) {
+                    Icons.Filled.Star
+                } else {
+                    Icons.Outlined.Star
+                },
+                contentDescription = "favorite",
+                tint = if (CourseUI.isFavorited) {
+                    Color(0xFF197278)
+                } else {
+                    Color.Gray
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun OfficeHours(officeHour: CourseOfficeHour){
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFE7F0F2),
+        modifier = Modifier
+            .wrapContentWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = "${officeHour.day}: ${officeHour.startTime} - ${officeHour.endTime}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF197278),
+                fontSize = 20.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "TA: ${officeHour.ta.name}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Location: ${officeHour.location}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray,
+                fontSize = 16.sp
+            )
+        }
     }
 }
 
@@ -188,25 +312,6 @@ fun PreviewOfficerHoursScreen() {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-//                Button(
-//                    onClick = {
-//                    },
-//                    colors = ButtonDefaults.buttonColors(
-//                        containerColor = Color.Transparent,
-//                        contentColor = Color.Black
-//                    ),
-//                    modifier = Modifier.border(
-//                        2.dp,
-//                        Color.Black,
-//                        shape = MaterialTheme.shapes.extraLarge
-//                    )
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Filled.ArrowBack,
-//                        contentDescription = "backwards arrow",
-//                        tint = Color.Black
-//                    )
-//                }
                 Row (
                     modifier = Modifier
                         .fillMaxWidth()
@@ -217,11 +322,19 @@ fun PreviewOfficerHoursScreen() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "left arrow",
-                        tint = Color(0xFF197278)
-                    )
+                    IconButton(
+                        onClick = {
+                            //onFavoriteClick()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "favorite",
+                            tint =
+                                Color(0xFF197278)
+
+                        )
+                    }
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -236,34 +349,67 @@ fun PreviewOfficerHoursScreen() {
                                 lineHeight = 32.sp
                             )
                     }
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "left arrow",
-                        tint = Color(0xFF197278)
-                    )
+                    IconButton(
+                        onClick = {
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "favorite",
+                            tint =
+                                Color(0xFF197278)
+                        )
+                    }
                 }
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp)
+                modifier = Modifier.fillMaxSize().padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Divider(
+                    color = Color.LightGray,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
 
                     Text(
                         "Instructors:",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    Text("- Mr. Cao (Contact: cao70)")
+                    Text(
+                        "• Mr. Cao (Contact: cao70)",
+                        fontSize = 16.sp,
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    )
 
-                    Text("TAs:", fontWeight = FontWeight.Bold)
-                    Text("- Greg Smith (Contact: gst437)")
+                Divider(
+                    color = Color.LightGray,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+                    Text(
+                        "TAs:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize =20.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text("• Greg Smith (Contact: gst437)",
+                        fontSize = 16.sp
+                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Divider(
+                    color = Color.LightGray,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
 
-                    Text("Office Hours:", fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Office Hours:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize =  20.sp
+                    )
+                    //Spacer(modifier = Modifier.height(8.dp))
 
                 Surface(
                     shape = RoundedCornerShape(12.dp),
@@ -274,20 +420,30 @@ fun PreviewOfficerHoursScreen() {
                 ) {
                     Column(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
                             text = "Tuesday: 10:00 - 11:00",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF197278)
+                            color = Color(0xFF197278),
+                            fontSize = 20.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "TA: Greg Smith",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = Color.DarkGray
+                            color = Color.DarkGray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Location: Goldwin Smith Hall",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.DarkGray,
+                            fontSize = 16.sp
                         )
                     }
                 }
@@ -300,20 +456,30 @@ fun PreviewOfficerHoursScreen() {
                 ) {
                     Column(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
                             text = "Thursday: 15:00 - 16:00",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF197278)
+                            color = Color(0xFF197278),
+                            fontSize = 20.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "TA: Greg Smith",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = Color.DarkGray
+                            color = Color.DarkGray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Location: Mallot Hall",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.DarkGray,
+                            fontSize = 16.sp
                         )
                     }
                 }
