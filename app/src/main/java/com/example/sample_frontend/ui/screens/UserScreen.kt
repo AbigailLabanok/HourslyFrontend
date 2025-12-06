@@ -40,7 +40,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.sample_frontend.ui.components.Footer
-import com.example.sample_frontend.ui.components.TeacherCard
 import com.example.sample_frontend.ui.data.TeacherInfo
 import com.example.sample_frontend.ui.data.sampleTeachers
 import com.example.sample_frontend.viewmodel.TeacherViewModel
@@ -83,19 +82,19 @@ fun UserScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn {
                     items(favoriteTeachers) {
-                        TeacherCard(
-                            name = it.name,
-                            className = it.className,
-                            location = it.location,
-                            times = it.times,
-                            isTeacher = it.isTeacher,
-                            isFavorited = it.isFavorited,
-                            onClick = {
-                                val id = it.id
-                                navController.navigate("officehours/$id")
-                            },
-                            onFavoriteClick = {teacherViewModel.onClickFavorite(it.id)}
-                        )
+//                        TeacherCard(
+//                            name = it.name,
+//                            className = it.className,
+//                            location = it.location,
+//                            times = it.times,
+//                            isTeacher = it.isTeacher,
+//                            isFavorited = it.isFavorited,
+//                            onClick = {
+//                                val id = it.id
+//                                navController.navigate("officehours/$id")
+//                            },
+//                            onFavoriteClick = {teacherViewModel.onClickFavorite(it.id)}
+//                        )
                     }
                 }
             }
@@ -109,7 +108,6 @@ fun UserScreenHeader(
 
 ) {
     val currentUser by userViewModel.currentUser.collectAsState()
-    println("${currentUser?.name}, ${currentUser?.id}")
 
     Row (
         modifier = Modifier

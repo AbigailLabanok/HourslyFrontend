@@ -12,8 +12,6 @@ data class CourseUser(
     val name: String,
 
     @SerialName("netid")
-    val netId: String,
-
-    @SerialName("courses")
-    val courses: List<UserCourse>? = null
+    val netid: String
 )
+

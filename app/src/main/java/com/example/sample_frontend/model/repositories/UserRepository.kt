@@ -1,6 +1,7 @@
-package com.example.sample_frontend.model
+package com.example.sample_frontend.model.repositories
 
-import com.example.sample_frontend.ui.data.User
+import com.example.sample_frontend.model.ApiService
+import com.example.sample_frontend.model.CreateUserRequest
 import com.example.sample_frontend.ui.data.UserResponse
 import javax.inject.Inject
 import javax.inject.Singleton

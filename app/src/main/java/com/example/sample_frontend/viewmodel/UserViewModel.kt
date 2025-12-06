@@ -1,13 +1,8 @@
 package com.example.sample_frontend.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sample_frontend.model.ApiService
-import com.example.sample_frontend.model.CreateUserRequest
-import com.example.sample_frontend.model.UserRepository
-import com.example.sample_frontend.ui.data.Course
+import com.example.sample_frontend.model.repositories.UserRepository
 import com.example.sample_frontend.ui.data.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

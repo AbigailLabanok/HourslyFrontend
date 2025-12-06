@@ -21,5 +21,5 @@ data class CourseOfficeHour(
     val location: String,
 
     @SerialName("ta")
-    val ta: OfficeHourTA
+    val ta: CourseUser
 )
