@@ -26,7 +26,7 @@ class CourseViewModel @Inject constructor(
             try {
                 val response = apiService.getCourses()
                 courses.clear()
-                courses.addAll(response.courses)
+                //courses.addAll(response.courses)
             } catch (e: Exception) {
                 println("Error loading courses: $e")
             }

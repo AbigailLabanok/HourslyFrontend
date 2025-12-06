@@ -6,10 +6,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sample_frontend.ui.data.sampleTeachers
+import com.example.sample_frontend.ui.screens.loginScreens.CreateUserScreen
+import com.example.sample_frontend.ui.screens.loginScreens.LoginScreen
+import com.example.sample_frontend.ui.screens.loginScreens.OpeningScreen
 import com.example.sample_frontend.viewmodel.TeacherViewModel
+import com.example.sample_frontend.viewmodel.UserViewModel
 
 @Composable
-fun NavWrapper() {
+fun NavWrapper(
+    userViewModel: UserViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+) {
     val navController = rememberNavController()
     val teacherViewModel = remember { TeacherViewModel() }
 
@@ -37,7 +43,22 @@ fun NavWrapper() {
             UserScreen(
                 navController = navController,
                 teachers = sampleTeachers,
-                teacherViewModel = teacherViewModel
+                teacherViewModel = teacherViewModel,
+                userViewModel = userViewModel
+            )
+        }
+
+        composable("create") {
+            CreateUserScreen(
+                navController = navController,
+                userViewModel = userViewModel
+            )
+        }
+
+        composable("login") {
+            LoginScreen(
+                navController = navController,
+                userViewModel = userViewModel
             )
         }
     }
