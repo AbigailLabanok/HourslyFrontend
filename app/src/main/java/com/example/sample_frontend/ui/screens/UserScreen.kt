@@ -1,6 +1,5 @@
 package com.example.sample_frontend.ui.screens
 
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,15 +17,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,25 +34,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.sample_frontend.ui.components.CourseCard
 import com.example.sample_frontend.ui.components.Footer
-import com.example.sample_frontend.ui.data.TeacherInfo
-import com.example.sample_frontend.ui.data.sampleTeachers
-import com.example.sample_frontend.viewmodel.TeacherViewModel
+import com.example.sample_frontend.viewmodel.CourseViewModel
 import com.example.sample_frontend.viewmodel.UserViewModel
 
 @Composable
 fun UserScreen(
     navController: NavHostController,
-    teachers: List<TeacherInfo>,
-    teacherViewModel: TeacherViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    courseViewModel: CourseViewModel
 ) {
 
-    val favoriteTeachers = teacherViewModel.teachers.filter { it.isFavorited }
+    val currentUser by userViewModel.currentUser.collectAsState()
+    val userSavedCourses by courseViewModel.favoriteCourses.collectAsState()
+    val savedOfficeHours by courseViewModel.savedOfficeHours.collectAsState()
+
+//    LaunchedEffect(currentUser?.id) {
+//        currentUser?.id?.toIntOrNull().let { userid ->
+//            courseViewModel.loadUserCourses(userid)
+//        }
+//    }
 
     Scaffold(
         topBar = { UserScreenHeader(userViewModel = userViewModel) },
@@ -64,7 +66,7 @@ fun UserScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            if (favoriteTeachers.isEmpty()) {
+            if (userSavedCourses.isEmpty() && savedOfficeHours.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -81,20 +83,44 @@ fun UserScreen(
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn {
-                    items(favoriteTeachers) {
-//                        TeacherCard(
-//                            name = it.name,
-//                            className = it.className,
-//                            location = it.location,
-//                            times = it.times,
-//                            isTeacher = it.isTeacher,
-//                            isFavorited = it.isFavorited,
-//                            onClick = {
-//                                val id = it.id
-//                                navController.navigate("officehours/$id")
-//                            },
-//                            onFavoriteClick = {teacherViewModel.onClickFavorite(it.id)}
-//                        )
+                    if (savedOfficeHours.isNotEmpty()){
+                        item {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text("Saved Office Hours:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Divider(color = Color.LightGray, thickness = 1.dp)
+                            }
+
+                        }
+                        items(savedOfficeHours) { officehour ->
+                            Column(
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            ) {
+                                OfficeHours(officehour, userViewModel = userViewModel, courseViewModel = courseViewModel)
+                            }
+                        }
+                    }
+                    if (userSavedCourses.isNotEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text("Saved Courses:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Divider(color = Color.LightGray, thickness = 1.dp)
+                            }
+
+                        }
+
+                        items(userSavedCourses) { course ->
+                            CourseCard(
+                                CourseUI = course,
+                                onClick = { navController.navigate("officehours/${course.course.id}") },
+                                onFavoriteClick = {courseViewModel.onClickFavorite(course.course.id)},
+                            )
+                        }
                     }
                 }
             }
@@ -157,7 +183,5 @@ fun UserScreenHeader(
 @Preview(showBackground = true)
 @Composable
 fun PreviewUserScreen() {
-    val sampleTeachers = sampleTeachers
-
     //UserScreen(navController = rememberNavController(), teachers = sampleTeachers, teacherViewModel = remember { TeacherViewModel() })
 }

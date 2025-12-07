@@ -24,16 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.sample_frontend.ui.components.CourseCard
 import com.example.sample_frontend.ui.components.Footer
 import com.example.sample_frontend.ui.components.HomeHeader
-import com.example.sample_frontend.ui.data.sampleTeachers
 import com.example.sample_frontend.viewmodel.CourseUI
 import com.example.sample_frontend.viewmodel.CourseUiState
 import com.example.sample_frontend.viewmodel.CourseViewModel
-import com.example.sample_frontend.viewmodel.TeacherViewModel
 
 @Composable
 fun HomeScreen(
@@ -49,9 +48,10 @@ fun HomeScreen(
         onSearchQueryChange = courseViewModel::setSearchQuery,
         onCourseClick = { id ->
             navController.navigate("officehours/$id")
-                        },
+        },
         onFavoriteClick = courseViewModel::onClickFavorite,
-        courseViewModel = courseViewModel
+        courseViewModel = courseViewModel,
+        navController = navController
     )
 }
 
@@ -63,13 +63,14 @@ private fun HomeScreenContent(
     onSearchQueryChange: (String) -> Unit,
     onCourseClick: (Int) -> Unit,
     onFavoriteClick: (Int) -> Unit,
-    courseViewModel: CourseViewModel
+    courseViewModel: CourseViewModel,
+    navController: NavController
 ) {
     val filteredCourses by courseViewModel.filteredCourses.collectAsState()
 
     Scaffold(
         topBar = { HomeHeader(searchQuery, onSearchQueryChange) },
-        bottomBar = { /* you can pass navController to Footer if needed */ }
+        bottomBar = { Footer(navController = navController)}
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -77,7 +78,6 @@ private fun HomeScreenContent(
                 .padding(innerPadding)
         ) {
             when {
-                //uiState.isLoading -> LoadingContent()
                 uiState.error != null -> ErrorContent(uiState.error)
                 uiState.courses.isEmpty() -> EmptyContent()
                 else -> CoursesContent(
@@ -107,7 +107,6 @@ private fun CoursesContent(
             ) {
                 CourseCard(
                     CourseUI = course,
-                    isFavorited = course.isFavorited,
                     onClick = { onCourseClick(course.course.id) },
                     onFavoriteClick = { onFavoriteClick(course.course.id) },
                     modifier = Modifier.animateItem()
@@ -140,16 +139,6 @@ private fun ErrorContent(error: String) {
         )
     }
 }
-
-//@Composable
-//private fun LoadingContent() {
-//    Box(
-//        modifier = Modifier.fillMaxSize(),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        CircularProgressIndicator()
-//    }
-//}
 
 @Preview(showBackground = true)
 @Composable

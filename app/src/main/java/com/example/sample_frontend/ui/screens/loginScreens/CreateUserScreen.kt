@@ -26,9 +26,12 @@ fun CreateUserScreen(
     navController: NavController
 ) {
     val uiState by userViewModel.uiState.collectAsState()
+    val currentUser by userViewModel.currentUser.collectAsState()
 
-    LaunchedEffect(uiState.users.size) {
-        if (uiState.users.isNotEmpty()) {
+    LaunchedEffect(currentUser) {
+        println("DEBUG — LaunchedEffect triggered. currentUser = $currentUser")
+        if (currentUser != null) {
+            println("DEBUG — Navigating to home...")
             navController.navigate("home") {
                 popUpTo("create") { inclusive = true }
             }

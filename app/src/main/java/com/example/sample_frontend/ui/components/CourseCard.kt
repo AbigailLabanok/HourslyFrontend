@@ -37,7 +37,6 @@ import com.example.sample_frontend.viewmodel.CourseUI
 @Composable
 fun CourseCard(
     CourseUI: CourseUI,
-    isFavorited: Boolean = false,
     onClick: () -> Unit = {},
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -116,13 +115,13 @@ fun CourseCard(
                 }
             ) {
                 Icon(
-                    imageVector = if (CourseUI.isFavorited) {
+                    imageVector = if (CourseUI.isFavorited.value) {
                         Icons.Filled.Star
                     } else {
                         Icons.Outlined.Star
                     },
                     contentDescription = "favorite",
-                    tint = if (CourseUI.isFavorited) {
+                    tint = if (CourseUI.isFavorited.value) {
                         Color(0xFF197278)
                     } else {
                         Color.Gray

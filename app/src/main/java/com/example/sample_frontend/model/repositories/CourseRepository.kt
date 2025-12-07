@@ -1,11 +1,8 @@
 package com.example.sample_frontend.model.repositories
 
-import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import com.example.sample_frontend.model.ApiService
-import com.example.sample_frontend.model.CreateUserRequest
 import com.example.sample_frontend.ui.data.CourseResponse
-import com.example.sample_frontend.ui.data.UserCourse
-import com.example.sample_frontend.ui.data.UserResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,5 +16,17 @@ class CourseRepository @Inject constructor(
 
     suspend fun getCourse(courseid: Int): Result<CourseResponse> = runCatching {
         apiService.getCourse(courseid)
+    }
+
+    suspend fun getUserCourses(userid: Int?): Result<List<CourseResponse>> = runCatching {
+        val userResponse = apiService.getUser(userid)
+        val savedOfficeHours = userResponse.savedOfficeHours.map { it.id }.toSet()
+
+        apiService.getCourses().courses.map { course ->
+            val updatedOH = course.officeHours.map { oh ->
+                oh.apply { isSaved.value = savedOfficeHours.contains(oh.id) }
+            }
+            course.copy(officeHours = updatedOH)
+        }
     }
 }
