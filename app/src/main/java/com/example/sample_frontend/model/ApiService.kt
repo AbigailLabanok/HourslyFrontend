@@ -2,16 +2,19 @@ package com.example.sample_frontend.model
 import com.example.sample_frontend.ui.data.CourseResponse
 import com.example.sample_frontend.ui.data.CoursesWrapper
 import com.example.sample_frontend.ui.data.UserResponse
+import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
+@Serializable
 data class CreateUserRequest(
     val name: String,
     val netid: String
 )
 
+@Serializable
 data class SaveOfficeHourRequest(
     val officehourid: Int,
 )

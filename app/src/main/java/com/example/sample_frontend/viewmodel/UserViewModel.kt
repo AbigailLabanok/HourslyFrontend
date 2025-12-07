@@ -46,11 +46,14 @@ class UserViewModel @Inject constructor(
                     )
                 }
                 _currentUser.value = user
+                println("DEBUG — createUser SUCCESS. User = ${user}")
             }.onFailure { exception ->
 
                 _uiState.update {
                     it.copy(isLoading = false, error = exception.message)
                 }
+                println("DEBUG — createUser FAILED. Error = ${exception.message}")
+
             }
         }
     }
