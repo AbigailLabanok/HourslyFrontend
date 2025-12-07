@@ -1,6 +1,4 @@
 package com.example.sample_frontend.model
-import androidx.compose.ui.graphics.vector.Path
-import com.example.sample_frontend.ui.data.Course
 import com.example.sample_frontend.ui.data.CourseResponse
 import com.example.sample_frontend.ui.data.CoursesWrapper
 import com.example.sample_frontend.ui.data.UserResponse
@@ -8,11 +6,14 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 data class CreateUserRequest(
     val name: String,
     val netid: String
+)
+
+data class SaveOfficeHourRequest(
+    val officehourid: Int,
 )
 
 interface ApiService {
@@ -26,5 +27,11 @@ interface ApiService {
     suspend fun createUser(@Body request: CreateUserRequest): UserResponse
 
     @GET("/api/users/{user_id}/")
-    suspend fun getUser(@Path("user_id") userid: Int): UserResponse
+    suspend fun getUser(@Path("user_id") userid: Int?): UserResponse
+
+    @POST("/api/users/{user_id}/save_officehour/")
+    suspend fun saveOfficeHour(@Path("user_id") userid: Int, @Body request: SaveOfficeHourRequest): UserResponse
+
+    @POST("/api/users/<int:user_id>/unsave_officehour/")
+    suspend fun unsaveOfficeHour(@Path("user_id") userid: Int, @Body request: SaveOfficeHourRequest): UserResponse
 }

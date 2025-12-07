@@ -7,12 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.sample_frontend.ui.data.sampleTeachers
 import com.example.sample_frontend.ui.screens.loginScreens.CreateUserScreen
 import com.example.sample_frontend.ui.screens.loginScreens.LoginScreen
 import com.example.sample_frontend.ui.screens.loginScreens.OpeningScreen
 import com.example.sample_frontend.viewmodel.CourseViewModel
-import com.example.sample_frontend.viewmodel.TeacherViewModel
 import com.example.sample_frontend.viewmodel.UserViewModel
 
 @Composable
@@ -21,8 +19,6 @@ fun NavWrapper(
     courseViewModel: CourseViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
     val navController = rememberNavController()
-    val teacherViewModel = remember { TeacherViewModel() }
-
     NavHost(
         navController = navController,
         startDestination = "open"
@@ -46,16 +42,16 @@ fun NavWrapper(
             OfficeHoursScreen(
                 id = courseid,
                 navController = navController,
-                courseViewModel = courseViewModel
+                courseViewModel = courseViewModel,
+                userViewModel = userViewModel
             )
         }
 
         composable("user") {
             UserScreen(
                 navController = navController,
-                teachers = sampleTeachers,
-                teacherViewModel = teacherViewModel,
-                userViewModel = userViewModel
+                userViewModel = userViewModel,
+                courseViewModel = courseViewModel
             )
         }
 

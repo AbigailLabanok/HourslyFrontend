@@ -37,8 +37,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,23 +58,20 @@ import com.example.sample_frontend.ui.data.CourseOfficeHour
 import com.example.sample_frontend.ui.data.CourseResponse
 import com.example.sample_frontend.viewmodel.CourseUI
 import com.example.sample_frontend.viewmodel.CourseViewModel
+import com.example.sample_frontend.viewmodel.UserViewModel
 import kotlinx.serialization.json.Json
 
 @Composable
 fun OfficeHoursScreen(
     id: Int?,
     navController: NavController,
-    courseViewModel: CourseViewModel
+    courseViewModel: CourseViewModel,
+    userViewModel: UserViewModel
 ) {
-//    val course = id?.let { courseid ->
-//        courseViewModel.courses.find { it.course.id == courseid }?.course
-//    }
 
-    val courseDetails by produceState<CourseResponse?>(initialValue = null, id) {
-        id?.let { cid ->
-            value = courseViewModel.getCourseById(cid)
-        }
-    }
+    val courseState = courseViewModel.courses
+    val courseUI = courseState.firstOrNull({ it.course.id==id })
+    val courseDetails = courseUI?.course
 
 
     Scaffold(
@@ -79,9 +79,9 @@ fun OfficeHoursScreen(
             courseDetails = courseDetails,
             navController = navController,
             onFavoriteClick = {
-                courseDetails?.id?.let { courseViewModel.onClickFavorite(it) }
+                courseUI.course.id.let { courseViewModel.onClickFavorite(it) }
             },
-            CourseUI = courseViewModel.courses.firstOrNull { it.course.id == id } ?: CourseUI(courseDetails!!, false)
+            courseUI = courseUI ?: return@Scaffold,
         ) },
         bottomBar = {Footer(navController = navController)}
     ) { innerPadding ->
@@ -101,7 +101,7 @@ fun OfficeHoursScreen(
                     )
 
                     Text("Instructors:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    courseDetails!!.instructors.forEach { instr ->
+                    courseDetails.instructors.forEach { instr ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -109,7 +109,7 @@ fun OfficeHoursScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${instr.name}",
+                                text = instr.name,
                                 fontSize = 16.sp,
                                 modifier = Modifier.weight(1f),
                                 textAlign = TextAlign.Center
@@ -123,7 +123,7 @@ fun OfficeHoursScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "${instr.netid}",
+                                text = instr.netid,
                                 fontSize = 16.sp,
                                 modifier = Modifier.weight(1f),
                                 textAlign = TextAlign.Center
@@ -138,7 +138,7 @@ fun OfficeHoursScreen(
                     )
 
                     Text("TAs:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    courseDetails!!.tas.forEach { ta ->
+                    courseDetails.tas.forEach { ta ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -146,7 +146,7 @@ fun OfficeHoursScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${ta.name}",
+                                text = ta.name,
                                 fontSize = 16.sp,
                                 modifier = Modifier.weight(1f),
                                 textAlign = TextAlign.Center
@@ -160,7 +160,7 @@ fun OfficeHoursScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "${ta.netid}",
+                                text = ta.netid,
                                 fontSize = 16.sp,
                                 modifier = Modifier.weight(1f),
                                 textAlign = TextAlign.Center
@@ -177,8 +177,8 @@ fun OfficeHoursScreen(
                     Text("Office Hours:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    courseDetails!!.officeHours.forEach { oh ->
-                        OfficeHours(officeHour = oh)
+                    courseUI.course.officeHours.forEach { oh ->
+                        OfficeHours(officeHour = oh, userViewModel = userViewModel, courseViewModel = courseViewModel)
                     }
                 } else {
                     Text("Course not found", color = Color.Red)
@@ -193,7 +193,7 @@ fun OfficeHoursScreenHeader(
     courseDetails: CourseResponse?,
     navController: NavController,
     onFavoriteClick: (Int) -> Unit,
-    CourseUI: CourseUI
+    courseUI: CourseUI
 ) {
     Row (
         modifier = Modifier
@@ -246,13 +246,13 @@ fun OfficeHoursScreenHeader(
             }
         ) {
             Icon(
-                imageVector = if (CourseUI.isFavorited) {
+                imageVector = if (courseUI.isFavorited.value) {
                     Icons.Filled.Star
                 } else {
                     Icons.Outlined.Star
                 },
                 contentDescription = "favorite",
-                tint = if (CourseUI.isFavorited) {
+                tint = if (courseUI.isFavorited.value) {
                     Color(0xFF197278)
                 } else {
                     Color.Gray
@@ -263,7 +263,9 @@ fun OfficeHoursScreenHeader(
 }
 
 @Composable
-fun OfficeHours(officeHour: CourseOfficeHour){
+fun OfficeHours(officeHour: CourseOfficeHour, userViewModel: UserViewModel, courseViewModel: CourseViewModel){
+    val currentUser by userViewModel.currentUser.collectAsState()
+    val isSaved by officeHour.isSaved
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = Color(0xFFE7F0F2),
@@ -271,33 +273,57 @@ fun OfficeHours(officeHour: CourseOfficeHour){
             .wrapContentWidth()
             .padding(vertical = 8.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "${officeHour.day}: ${officeHour.startTime} - ${officeHour.endTime}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF197278),
-                fontSize = 20.sp
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "TA: ${officeHour.ta.name}",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = Color.DarkGray,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "Location: ${officeHour.location}",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = Color.DarkGray,
-                fontSize = 16.sp
-            )
+            Column(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "${officeHour.day}: ${officeHour.startTime} - ${officeHour.endTime}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF197278),
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "TA: ${officeHour.ta.name}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.DarkGray,
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Location: ${officeHour.location}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.DarkGray,
+                    fontSize = 16.sp
+                )
+            }
+            IconButton(
+                onClick = {
+                    courseViewModel.onClickSaveOfficeHour(officeHour.id)
+                }
+            ) {
+                Icon(
+                    imageVector = if (isSaved) {
+                        Icons.Filled.Star
+                    } else {
+                        Icons.Outlined.Star
+                    },
+                    contentDescription = "favorite",
+                    tint = if (isSaved) {
+                        Color(0xFF197278)
+                    } else {
+                        Color.Gray
+                    }
+                )
+            }
         }
     }
 }
@@ -419,7 +445,7 @@ fun PreviewOfficerHoursScreen() {
                         .padding(vertical = 4.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
@@ -427,7 +453,7 @@ fun PreviewOfficerHoursScreen() {
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF197278),
-                            fontSize = 20.sp
+                            fontSize = 18.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -463,7 +489,7 @@ fun PreviewOfficerHoursScreen() {
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF197278),
-                            fontSize = 20.sp
+                            fontSize = 18.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(

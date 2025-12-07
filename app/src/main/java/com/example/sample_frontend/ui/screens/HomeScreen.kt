@@ -30,11 +30,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.sample_frontend.ui.components.CourseCard
 import com.example.sample_frontend.ui.components.Footer
 import com.example.sample_frontend.ui.components.HomeHeader
-import com.example.sample_frontend.ui.data.sampleTeachers
 import com.example.sample_frontend.viewmodel.CourseUI
 import com.example.sample_frontend.viewmodel.CourseUiState
 import com.example.sample_frontend.viewmodel.CourseViewModel
-import com.example.sample_frontend.viewmodel.TeacherViewModel
 
 @Composable
 fun HomeScreen(

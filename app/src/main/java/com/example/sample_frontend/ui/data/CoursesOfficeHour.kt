@@ -1,5 +1,7 @@
 package com.example.sample_frontend.ui.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,5 +23,7 @@ data class CourseOfficeHour(
     val location: String,
 
     @SerialName("ta")
-    val ta: CourseUser
+    val ta: CourseUser,
+
+    val isSaved: MutableState<Boolean> = mutableStateOf(false)
 )
